@@ -1,0 +1,48 @@
+---
+title: "p8130_hw4_ps3194"
+author: "Pangsibo Shen"
+date: "11/5/2020"
+output: html_document
+---
+
+```{r echo=FALSE}
+library(tidyverse)
+```
+
+## **Problem 1**
+
+In the context of ANOVA model, prove the partitioning of the total variability (sum of squares).
+
+------------------------------------
+
+##### **solution:**
+
+We start the proof from the fact that difference between each observation and the grand mean equals the sum of within group variability and between group variability. 
+$$
+\begin{split}
+y_{ij}: \ denote \ the \ observation \ from \ the \ j^{th} \ subject \ from  \ the \  i^{th} \  group. \\
+\bar{\bar{y}}: \ denote \ the  \ grand \ mean \\
+\bar{y}_i: \ denote \ the  \ mean \ from \ the \ i^{th} \  group. \\
+y_{ij} - \bar{\bar{y}}: difference \ between \ each \ observation \ and \ the \ grand \ mean \\
+y_{ij} - \bar{y}_i: within \ group \ variability \\
+\bar{y}_i - \bar{\bar{y}}: between \ group \ variability \\
+y_{ij} - \bar{\bar{y}} = (y_{ij} - \bar{y}_i) + (\bar{y}_i - \bar{\bar{y}}) 
+\end{split}
+$$
+We then square and take the total sum of both sides of the equation
+$$
+\begin{split}
+\sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{\bar{y}})^2 = \sum ^k_{i=1}\sum^{n_i}_{j=1}[(y_{ij} - \bar{y_i}) + (\bar{y_i}-\bar{\bar{y}})]^2
+\end{split}
+$$
+We then expand the right side of the equation
+$$
+\begin{split}
+\sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{\bar{y}})^2 = \sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{y_i})^2 +2\sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{y_i})(\bar{y_i}-\bar{\bar{y}}) + \sum ^k_{i=1}\sum^{n_i}_{j=1}(\bar{y_i}-\bar{\bar{y}})^2 \\
+\sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{y_i})(\bar{y_i}-\bar{\bar{y}}) = 0 \\
+\Rightarrow\sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{\bar{y}})^2 = \sum ^k_{i=1}\sum^{n_i}_{j=1}(y_{ij} - \bar{y_i})^2  + \sum ^k_{i=1}\sum^{n_i}_{j=1}(\bar{y_i}-\bar{\bar{y}})^2
+\end{split}
+$$
+We thus complete the proof of partitioning of the total variability
+
+------------------
