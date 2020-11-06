@@ -5,7 +5,7 @@ date: "11/5/2020"
 output: pdf_document
 ---
 
-```{r echo=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(arsenal)
 library(multcomp)
@@ -141,12 +141,12 @@ pairwise.t.test(as.numeric(new_knee_df$mean_time), new_knee_df$group, p.adj = 'b
 ```
 The p-value for t test between above group and average group is 0.0011 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the average group; The p-value for t test between above  group and blow group is 1.1e-05 which is far less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the blow group. However, The p-value for t test between average group and blow group is 0.0898 which is greater than the $\alpha = 0.01$. Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and blow group. 
 
------------------------------
 
 We performed a pairwise comparison with Tukey adjustments below:
 ```{r}
 # Another option using aov();
 # Save the anova object for Tukey comparisons
+
 res1 = aov(mean_time~factor(group), data = new_knee_df)
 summary(res1)
 
@@ -155,7 +155,6 @@ Tukey_comp
 plot(Tukey_comp)
 ```
 
---------------------------------
 
 We performed a pairwise comparison with Dunnett adjustments below:
 
@@ -173,7 +172,7 @@ summary
 
 ##### **a)**
 
-We are going to use Chi-squared:test of Homogeneity to evaluate whether the frequency counts distributed identically across different treatment groups. Because the data from observations made on two different categorical variables with 2 or more levels. First. we are going to construct a 2 X 3 contingency table. 
+We are going to use Chi-squared:test of Homogeneity to evaluate whether the frequency counts distributed identically across different treatment groups, because the data from observations made on two different categorical variables with 2 or more levels. First. we are going to construct a 2 X 3 contingency table. 
 
 ##### **b)**
 
