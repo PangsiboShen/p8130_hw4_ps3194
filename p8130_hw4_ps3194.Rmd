@@ -8,13 +8,13 @@ output: pdf_document
 ```{r echo=FALSE}
 library(tidyverse)
 library(arsenal)
+library(multcomp)
 ```
 
 ## **Problem 1**
 
 In the context of ANOVA model, prove the partitioning of the total variability (sum of squares).
 
-------------------------------------
 
 ##### **solution:**
 
@@ -83,6 +83,7 @@ knitr::kable(summary(tab1, title = "Descriptive Statistics"))
 There are 2 missing value for Below average group, 3 missing for Above group and no data missing for average. The Below average group has the longest mean time required until rehabilitation among three groups and the above average group has the smallest mean time. Furthermore, the below average group also has the largest standard deviation for the mean time until rehabilitation and the average group has the smallest standard deviation for the mean time until rehabilitation. The longest time required in physical therapy until successful rehabilitation is 42 days which also belongs to the below average group; the shortest time required in physical therapy until successful rehabilitation is 21 days which belongs to the above average group. 
 
 ##### **b)**
+
 We are using $\alpha = 0.01$ for the ANOVA test and the test hypotheseses are shown below:
 
 $$
@@ -129,4 +130,99 @@ F_{k-1,n-k,1-\alpha} = 5.719 \\
 F_{stat} > F_{2,122,1-0.01}
 \end{split}
 $$
-Since F (19.2805) is greater than $F_{2,22,0.99}$ (`r qf(0.99,2,22)`) We rejected the null hypothesis and conclude that at $\alpha$ level of 0.01 that there is a significant difference in the mean time (days) required in physical therapy until successful rehabilitation between the groups with different pysical status.
+Since F (19.2805) is greater than $F_{2,22,0.99}$ (`r qf(0.99,2,22)`) We rejected the null hypothesis and conclude that at $\alpha$ level of 0.01 that there is a significant difference in the mean time (days) required in physical therapy until successful rehabilitation between the groups with different physical status.
+
+##### **c)**
+
+We performed a pairwise comparison with Bonferroni adjustments below:
+
+```{r}
+pairwise.t.test(as.numeric(new_knee_df$mean_time), new_knee_df$group, p.adj = 'bonferroni')
+```
+The p-value for t test between above group and average group is 0.0011 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the average group; The p-value for t test between above  group and blow group is 1.1e-05 which is far less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the blow group. However, The p-value for t test between average group and blow group is 0.0898 which is greater than the $\alpha = 0.01$. Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and blow group. 
+
+-----------------------------
+
+We performed a pairwise comparison with Tukey adjustments below:
+```{r}
+# Another option using aov();
+# Save the anova object for Tukey comparisons
+res1 = aov(mean_time~factor(group), data = new_knee_df)
+summary(res1)
+
+Tukey_comp = TukeyHSD(res1)
+Tukey_comp
+plot(Tukey_comp)
+```
+
+--------------------------------
+
+We performed a pairwise comparison with Dunnett adjustments below:
+
+```{r}
+summary(glht(res1), linfct = mcp(Group="Dunnett"))
+```
+
+##### **d)**
+
+summary
+
+------------------------------
+
+## Problem 3
+
+##### **a)**
+
+We are going to use Chi-squared:test of Homogeneity to evaluate whether the frequency counts distributed identically across different treatment groups. Because the data from observations made on two different categorical variables with 2 or more levels. First. we are going to construct a 2 X 3 contingency table. 
+
+##### **b)**
+
+```{r}
+# 2 X 3 contingency table
+Treatment_Outcome = c("Vaccine","Placebo")
+Major_Swelling = c(54,16)
+Minor_Swelling = c(42,32)
+No_Swelling = c(134,142)
+rc_table = data.frame("RC" = Treatment_Outcome, Major_Swelling, Minor_Swelling, No_Swelling)
+knitr::kable(rc_table)
+```
+Then we are going to compute the expected values for each cell in the contingency table.The table for expected values is shown below:
+
+```{r}
+# Table for expected value
+rc_table_exp = data.matrix(data.frame(Major_Swelling, Minor_Swelling, No_Swelling))
+expected_value = chisq.test(rc_table_exp)$expected
+knitr::kable(data.frame(RC = Treatment_Outcome, expected_value))
+```
+Seems like all assumptions are met: independent random samples; No expected cell counts are 0, and no more than 20% of the cells have an expected count level less than 5. Next we have our null hypothesis, alternative hypothesis and formula for test statistics.
+
+##### **c)**
+$$
+\begin{split}
+H_0:p_{1j} =p_{2j}=...=p_{Rj}=p_(.j)\\
+H_1: p_{ij}\neq p_{i'j},~j=1,2,...,C,i\neq i'\\
+\chi^2_{stat} = \sum_i^{R}\sum_j^{C}\frac{(n_{ij}-E_{ij}-0.5)^2}{E_{ij}} \sim \chi^2_{ (R-1)\times(C-1)},where~df = (R-1)\times(C-1)
+\end{split}
+$$
+
+```{r}
+chi_sq = ((54-38.33333 - 0.5)^2/38.33333 + (42 - 40.52381 - 0.5)^2/40.52381 + (134-151.1429 - 0.5)^2/151.1429 + (16-31.66667-0.5)^2/31.66667 + (32-33.47619-0.5)^2/33.47619 +(142-124.8571-0.5)^2/124.8571)
+
+chi_sq
+
+chi_cri = qchisq(0.95, 2)
+
+chi_cri
+
+chisq.test(rc_table_exp, correct = TRUE)
+```
+$$
+\begin{split}
+\chi^2_{stat} = \frac{(54-38.33333 - 0.5)^2}{38.33333} + \frac{(42 - 40.52381 - 0.5)^2}{40.52381} + \frac{(134-151.1429 - 0.5)^2}{151.1429} + \\
+\frac{(16-31.66667-0.5)^2}{31.66667} +\frac{(32-33.47619-0.5)^2}{33.47619} \frac{(142-124.8571-0.5)^2}{124.8571} = 18.67229 \sim \chi^2_{ (1)\times(2)} \\
+\chi^2_{critical} = \chi^2_{2,0.95} = 5.991465 \\
+\chi^2_{stat} > \chi^2_{critical} \ \ \ rejcet \ the \ null \ hypothesis
+\end{split}
+$$
+
+Plug in the number, we get $\chi^2_{stat}$ = `r chi_sq` which is greater than the critical value $\chi^2_{4,0.95}$ `r chi_cri`. Hence, we reject the null hypothesis and conclude that at least one of the singles outcomes differs in treatment and placebo groups.  
