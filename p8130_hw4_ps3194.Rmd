@@ -51,7 +51,7 @@ We thus complete the proof of partitioning of the total variability
 ## **Problem 2**
 
 load the data
-```{r}
+```{r message = FALSE, warning = FALSE}
 knee_df = read_csv("./data/Knee.csv")
 ```
 
@@ -80,11 +80,11 @@ tab1 <- tableby(~Below + Average + Above,data = knee_df, control = my_controls)
 knitr::kable(summary(tab1, title = "Descriptive Statistics"))
 ```
 
-There are 2 missing value for Below average group, 3 missing for Above group and no data missing for average. The Below average group has the longest mean time required until rehabilitation among three groups and the above average group has the smallest mean time. Furthermore, the below average group also has the largest standard deviation for the mean time until rehabilitation and the average group has the smallest standard deviation for the mean time until rehabilitation. The longest time required in physical therapy until successful rehabilitation is 42 days which also belongs to the below average group; the shortest time required in physical therapy until successful rehabilitation is 21 days which belongs to the above average group. 
+There are 2 missing value for below average group, 3 missing for above average group and no data missing for average. The below average group has the longest mean time required until rehabilitation among three groups and the above average group has the smallest mean time. Furthermore, the below average group also has the largest standard deviation for the mean time until rehabilitation and the average group has the smallest standard deviation for the mean time until rehabilitation. The longest time required in physical therapy until successful rehabilitation is 42 days which also belongs to the below average group; the shortest time required in physical therapy until successful rehabilitation is 21 days which belongs to the above average group. 
 
 ##### **b)**
 
-We are using $\alpha = 0.01$ for the ANOVA test and the test hypotheseses are shown below:
+We are using $\alpha = 0.01$ for the ANOVA test and the test hypotheses are shown below:
 
 $$
 \begin{split}
@@ -101,15 +101,14 @@ $$
 ```{r}
 # Re-shape the data
 mean_time = c(knee_df$Below,knee_df$Average,knee_df$Above)
-group = c(rep("blow",length(knee_df$Below)),rep("average",length(knee_df$Average)),rep("above",length(knee_df$Above)))
+group = c(rep("below",length(knee_df$Below)),rep("average",length(knee_df$Average)),rep("above",length(knee_df$Above)))
 new_knee_df = as.data.frame(cbind(mean_time,group)) %>% drop_na()
 
 # Perform an ANOVA test
 # Function lm() is broader, including linear regression models
-res = lm(mean_time~factor(group), data=new_knee_df)
+res = lm(mean_time~factor(group), data = new_knee_df)
 
 # Coefficients of the ANOVA model with 'grand mean' and alpha effects.
-# Will use them later in regression.
 res
 
 # Our regular ANOVA table with SS, Mean SS and F-test
@@ -121,7 +120,6 @@ The ANOVA table is shown below:
 ```{r}
 #critical value
 qf(0.99,2,22)
-
 ```
 $$
 \begin{split}
@@ -139,40 +137,44 @@ We performed a pairwise comparison with Bonferroni adjustments below:
 ```{r}
 pairwise.t.test(as.numeric(new_knee_df$mean_time), new_knee_df$group, p.adj = 'bonferroni')
 ```
-The p-value for t test between above group and average group is 0.0011 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the average group; The p-value for t test between above  group and blow group is 1.1e-05 which is far less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the blow group. However, The p-value for t test between average group and blow group is 0.0898 which is greater than the $\alpha = 0.01$. Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and blow group. 
+The p-value for pairwise comparison test between above average group and average group is 0.0011 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above average group and the average group; The p-value for pairwise comparison test between above  group and below average group is 1.1e-05 which is far less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the below average group. However, The p-value for pairwise comparison  test between average group and below average group is 0.0898 which is greater than the $\alpha = 0.01$. Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and below average group. 
 
 
 We performed a pairwise comparison with Tukey adjustments below:
 ```{r}
-# Another option using aov();
+#refactor the group level so below average will be the reference
+new_knee_df$group = factor(new_knee_df$group, levels = c("below","average","above"))
 # Save the anova object for Tukey comparisons
-
 res1 = aov(mean_time~factor(group), data = new_knee_df)
-summary(res1)
 
 Tukey_comp = TukeyHSD(res1)
 Tukey_comp
 plot(Tukey_comp)
 ```
-
+The p-value for pairwise comparison test between above average group and average group is 0.0010053 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above average group and the average group; The p-value for pairwise comparison test between above group and below average group is 0.0000102 which is far less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above group and the below average group. However, The p-value for pairwise comparison test between average group and below average group is 0.0736833 which is greater than the $\alpha = 0.01$. Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and below average group.
 
 We performed a pairwise comparison with Dunnett adjustments below:
 
 ```{r}
-summary(glht(res1), linfct = mcp(Group="Dunnett"))
+summary(glht(res1), linfct = mcp(Group = "Dunnett"))
 ```
+We set the below average group as the reference for the Dunnett method.The p-value between below average group and average group is 0.0681 which is greater than the $\alpha = 0.01$.Hence we fail to reject the null hypothesis and conclude that there is no difference in mean between the average group and below average group; The p-value between the above average group and below average group is less than 0.001 which is less than the $\alpha = 0.01$. Hence we reject the null hypothesis and conclude that there is a significant difference in mean between the above average group and the below average group.
+
+Similarity: The p-values between each pairwise comparison reported by each method are very close to each other. We can also interpret the same decision from these three methods: the mean time from below group is significantly different from that of above group; the mean time from average group is significantly different from that of above group; the mean time from below group is not significantly different from that of average group.
+
+Differences: Bonferroni is the most conservative method and it is the most stringent in declaring significance; Tukey's method controls for all pairwise comparisons and it is less conservative than Bonferroni;Dunnett's method mainly focuses on comparisons with a pre-defined control arm, yet it can't do all pairwise comparisons like Tukey's and Bonferroni.
 
 ##### **d)**
 
-summary
+From the health records of patients 18-30 years old provided by the rehabilitation center, we performed a One-way ANOVA hypothesis testing to test whether there is a significant difference in the mean time (days) required in physical therapy until successful rehabilitation between the groups with different physical status(‘below average’, ‘average’ and ‘above average’). The test statistics of ANOVA is greater than the critical value. Hence we reject the null hypothesis and conclude that there is a significant difference in the mean time (days) required in physical therapy until successful rehabilitation between the groups with different physical status. However, the ANOVA test didn't report which pairs of means are different. Therefore, we performed three Post-Hoc Tests: Bonferroni adjustment, Tukey's method and Dunnett's method. From the Post-Hoc analysis, we found out that the means is significantly different between below average group and above average group; similarly, the means is significantly different between average group and above average group;However, the mean time from below average group is not significantly different from that of the average group. 
 
 ------------------------------
 
 ## Problem 3
-
 ##### **a)**
-
 We are going to use Chi-squared:test of Homogeneity to evaluate whether the frequency counts distributed identically across different treatment groups, because the data from observations made on two different categorical variables with 2 or more levels. First. we are going to construct a 2 X 3 contingency table. 
+
+-------------------------------
 
 ##### **b)**
 
@@ -195,7 +197,10 @@ knitr::kable(data.frame(RC = Treatment_Outcome, expected_value))
 ```
 Seems like all assumptions are met: independent random samples; No expected cell counts are 0, and no more than 20% of the cells have an expected count level less than 5. Next we have our null hypothesis, alternative hypothesis and formula for test statistics.
 
+--------------------
+
 ##### **c)**
+
 $$
 \begin{split}
 H_0:p_{1j} =p_{2j}=...=p_{Rj}=p_(.j)\\
