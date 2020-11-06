@@ -229,4 +229,4 @@ $$
 \end{split}
 $$
 
-Plug in the number, we get $\chi^2_{stat}$ = `r chi_sq` which is greater than the critical value $\chi^2_{4,0.95}$ `r chi_cri`. Hence, we reject the null hypothesis and conclude that at least one of the singles outcomes differs in treatment and placebo groups.  
+Plug in the number, we get $\chi^2_{stat}$ = `r chi_sq` which is greater than the critical value $\chi^2_{4,0.95}$ `r chi_cri`. Hence, we reject the null hypothesis and conclude that at 0.05 significance level, the singles outcomes differ in treatment(chicken pox vaccine) and placebo groups.  
